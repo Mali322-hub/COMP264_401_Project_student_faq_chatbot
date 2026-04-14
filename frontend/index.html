@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Student FAQ Chatbot</title>
+
+  <style>
+    :root{
+      --bg:#eef6ff;
+      --panel:#ffffff;
+      --panel2:#f7fbff;
+      --border:#d6e6f7;
+      --text:#17324d;
+      --muted:#5f7d99;
+      --blue:#2f80ed;
+      --blue2:#1f6fd6;
+      --lightBlue:#dff0ff;
+      --bot:#eaf4ff;
+      --user:#2f80ed;
+      --shadow:0 12px 30px rgba(47,128,237,.12);
+      --radius:18px;
+    }
+
+    *{ box-sizing:border-box; }
+
+    body{
+      margin:0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(180deg, #f7fbff 0%, #eaf4ff 100%);
+      color:var(--text);
+      min-height:100vh;
+      padding:30px 16px;
+    }
+
+    .wrap{
+      max-width:900px;
+      margin:0 auto;
+    }
+
+    .header{
+      background: linear-gradient(135deg, #ffffff, #edf6ff);
+      border:1px solid var(--border);
+      border-radius:24px;
+      padding:24px;
+      box-shadow:var(--shadow);
+      margin-bottom:18px;
+    }
+
+    .header h1{
+      margin:0 0 8px;
+      font-size:32px;
+      color:#1e4f86;
+    }
+
+    .header p{
+      margin:0;
+      color:var(--muted);
+      font-size:15px;
+    }
+
+    .card{
+      background:var(--panel);
+      border:1px solid var(--border);
+      border-radius:24px;
+      box-shadow:var(--shadow);
+      overflow:hidden;
+    }
+
+    .cardHead{
+      padding:18px 20px;
+      background:var(--panel2);
+      border-bottom:1px solid var(--border);
+      font-size:24px;
+      font-weight:bold;
+      color:#245b94;
+    }
+
+    .cardBody{
+      padding:20px;
+    }
+
+    label{
+      display:block;
+      margin-bottom:8px;
+      font-size:15px;
+      color:var(--muted);
+    }
+
+    input{
+      width:100%;
+      padding:14px 16px;
+      border-radius:14px;
+      border:1px solid var(--border);
+      background:#fff;
+      color:var(--text);
+      font-size:16px;
+      outline:none;
+      margin-bottom:14px;
+    }
+
+    input:focus{
+      border-color:var(--blue);
+      box-shadow:0 0 0 4px rgba(47,128,237,.12);
+    }
+
+    .btnRow{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-bottom:18px;
+    }
+
+    button{
+      border:none;
+      padding:12px 18px;
+      border-radius:14px;
+      font-size:15px;
+      font-weight:bold;
+      cursor:pointer;
+      transition:.2s ease;
+    }
+
+    .primary{
+      background:linear-gradient(135deg, var(--blue), var(--blue2));
+      color:white;
+    }
+
+    .primary:hover{
+      filter:brightness(1.05);
+    }
+
+    .secondary{
+      background:#e7f1fb;
+      color:#215c96;
+    }
+
+    .secondary:hover{
+      background:#dcecff;
+    }
+
+    .chatBox{
+      border:1px solid var(--border);
+      border-radius:18px;
+      background:#fafdff;
+      min-height:260px;
+      padding:16px;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      overflow-y:auto;
+    }
+
+    .msg{
+      max-width:75%;
+      padding:12px 14px;
+      border-radius:16px;
+      line-height:1.5;
+      font-size:15px;
+      white-space:pre-wrap;
+    }
+
+    .userMsg{
+      align-self:flex-end;
+      background:var(--user);
+      color:white;
+      border-bottom-right-radius:6px;
+    }
+
+    .botMsg{
+      align-self:flex-start;
+      background:var(--bot);
+      color:var(--text);
+      border:1px solid #d5e9fb;
+      border-bottom-left-radius:6px;
+    }
+
+    .status{
+      margin-top:12px;
+      font-size:14px;
+      color:var(--muted);
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="header">
+      <h1>Student FAQ Chatbot</h1>
+      <p>Ask questions about deadlines, classes, fees, library, password reset, and student services.</p>
+    </div>
+
+    <div class="card">
+      <div class="cardHead">Chat</div>
+      <div class="cardBody">
+        <label for="question">Type your question</label>
+        <input type="text" id="question" placeholder="Example: How do I reset my password?" />
+
+        <div class="btnRow">
+          <button class="primary" onclick="sendQuestion()">Send</button>
+          <button class="secondary" onclick="clearChat()">Clear</button>
+        </div>
+
+        <div class="chatBox" id="chatBox">
+          <div class="msg botMsg">Hello. Ask me a question and I will try to help.</div>
+        </div>
+
+        <div class="status" id="status">Status: Ready</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    async function sendQuestion() {
+      const questionInput = document.getElementById("question");
+      const question = questionInput.value.trim();
+      const chatBox = document.getElementById("chatBox");
+      const status = document.getElementById("status");
+
+      if (!question) {
+        status.textContent = "Status: Please type a question";
+        return;
+      }
+
+      const userMsg = document.createElement("div");
+      userMsg.className = "msg userMsg";
+      userMsg.textContent = question;
+      chatBox.appendChild(userMsg);
+
+      questionInput.value = "";
+      status.textContent = "Status: Sending question...";
+
+      const loadingMsg = document.createElement("div");
+      loadingMsg.className = "msg botMsg";
+      loadingMsg.textContent = "Typing...";
+      chatBox.appendChild(loadingMsg);
+      chatBox.scrollTop = chatBox.scrollHeight;
+
+      try {
+        const res = await fetch("http://127.0.0.1:8000/chat", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ question: question })
+        });
+
+        const data = await res.json();
+        const answer = data.answer || "No answer received.";
+const phrases = data.key_phrases || [];
+
+if (phrases.length > 0) {
+  loadingMsg.textContent = answer + "\n\nKey phrases: " + phrases.join(", ");
+} else {
+  loadingMsg.textContent = answer;
+}
+        status.textContent = "Status: Done";
+      } catch (error) {
+        loadingMsg.textContent = "Error: Could not connect to backend.";
+        status.textContent = "Status: Error";
+      }
+
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    function clearChat() {
+      const chatBox = document.getElementById("chatBox");
+      chatBox.innerHTML = '<div class="msg botMsg">Hello. Ask me a question and I will try to help.</div>';
+      document.getElementById("question").value = "";
+      document.getElementById("status").textContent = "Status: Ready";
+    }
+
+    document.getElementById("question").addEventListener("keydown", function(event) {
+      if (event.key === "Enter") {
+        sendQuestion();
+      }
+    });
+  </script>
+</body>
+</html>
